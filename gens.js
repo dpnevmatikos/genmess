@@ -1,6 +1,11 @@
+var _ = require('underscore');
+
+if (typeof _ === 'undefined') {
+    throw 'Underscore was not found';
+}
+
 var s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-var searchWord = 'Cat';
 var instance = '';
 var population = [];
 
@@ -8,7 +13,7 @@ var Entity = function() {
     this.value = undefined;
     this.rating = undefined;
     this.normalizedRating = undefined;
-}
+};
 
 var GeneticEvolver = function(options) {
     this.Seed = options.seed; 
@@ -21,7 +26,7 @@ var GeneticEvolver = function(options) {
     this.TotalRating = 0;
     this.StartTime = undefined;
     this.EndTime = undefined;
-}
+};
 
 GeneticEvolver.prototype.evolve = function() {
     this.StartTime = new Date().getTime();
@@ -29,7 +34,7 @@ GeneticEvolver.prototype.evolve = function() {
 
     // Evolve generations
     var g = 0;
-    while (g < this.Generations && g != -1) {
+    while (g < this.Generations) {
         
         // Create population
         for (i = 0; i < this.PopulationMembers; i++) {
@@ -43,12 +48,15 @@ GeneticEvolver.prototype.evolve = function() {
             this.CurrentPopulation[i] = entity;
         }
         
+        var totalNormalizedRating = 0;
         for (i = 0; i < this.PopulationMembers; i++) {
             this.calculateNormalizedRating(this.CurrentPopulation[i]);
+            totalNormalizedRating += this.CurrentPopulation[i].normalizedRating;
         }
 
         console.log(this.CurrentPopulation);
         console.log("Total rating: " + this.TotalRating);
+        console.log('Total normalized rating: ' + totalNormalizedRating);
         
         // Reset rating
         this.TotalRating = 0;
@@ -70,8 +78,13 @@ GeneticEvolver.prototype.calculateFitness = function(entity) {
 };
 
 GeneticEvolver.prototype.calculateNormalizedRating = function(entity) {
-    entity.normalizedRating = entity.rating / this.TotalRating;
-}
+    if (this.TotalRating === 0) {
+        entity.normalizedRating = 0;
+        return;
+    }
+    
+    entity.normalizedRating = (entity.rating / this.TotalRating).toFixed(2) * 100;
+};
 
 // Generates a random string with length equal to
 // SearchWord
@@ -79,16 +92,10 @@ GeneticEvolver.prototype.randomString = function() {
     var randomStr = '';
 
     for (var i = 0; i < this.SearchWord.length; i++) {
-        randomStr += this.Seed.charAt(getRandomArbitrary(0, this.Seed.length));
+        randomStr += this.Seed.charAt(_.random(0, this.Seed.length - 1));
     }
 
     return randomStr;
-};
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-// min (inclusive) - max (exclusive)
-function getRandomArbitrary(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
 };
 
 var g = new GeneticEvolver({
