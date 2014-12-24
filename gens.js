@@ -6,9 +6,6 @@ if (typeof _ === 'undefined') {
 
 var s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-var instance = '';
-var population = [];
-
 var Entity = function() {
     this.value = undefined;
     this.rating = undefined;
