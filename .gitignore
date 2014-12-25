@@ -1,1 +1,4 @@
 node_modules/*
+*.swp
+*.json
+.DS_store
