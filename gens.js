@@ -1,3 +1,4 @@
+var fs = require('fs');
 var _ = require('underscore');
 
 if (typeof _ === 'undefined') {
@@ -26,7 +27,7 @@ var GeneticEvolver = function(options) {
 };
 
 GeneticEvolver.prototype.evolve = function() {
-    this.StartTime = new Date().getTime();
+    this.StartTime = new Date();
     var i = 0;
 
     // Evolve generations
@@ -51,11 +52,17 @@ GeneticEvolver.prototype.evolve = function() {
             totalNormalizedRating += this.CurrentPopulation[i].normalizedRating;
         }
 
+        // Generation data output
         console.log(this.CurrentPopulation);
         console.log("Total rating: " + this.TotalRating);
         console.log('Total normalized rating: ' + totalNormalizedRating);
+
+        var filename = this.StartTime.toISOString() + '-' + g +'.json';
+        fs.appendFileSync(filename, JSON.stringify(this.CurrentPopulation, null, 4));
+        fs.appendFileSync(filename, "Total rating: " + this.TotalRating) + '\n';
+        fs.appendFileSync(filename, 'Total normalized rating: ' + totalNormalizedRating);
         
-        // Reset rating
+        // Reset vars
         this.TotalRating = 0;
         g++;
     }// while
@@ -65,11 +72,13 @@ GeneticEvolver.prototype.calculateFitness = function(entity) {
     var rating = 0;
     var val = entity.value;
     
-    for (var i = 0; i <this.SearchWord.length; i++) {
-        if (val.charAt(i) == this.SearchWord.charAt(i)) {
-            rating++;
+    for (var i = 0; i < this.SearchWord.length; i++) {
+        if (val.charAt(i) === this.SearchWord.charAt(i)) {
+            rating+=2;
         }
     }
+
+    rating += (_.intersection(this.SearchWord.split(''), val.split(''))).length;
     
     return rating;
 };
@@ -80,7 +89,7 @@ GeneticEvolver.prototype.calculateNormalizedRating = function(entity) {
         return;
     }
     
-    entity.normalizedRating = (entity.rating / this.TotalRating).toFixed(2) * 100;
+    entity.normalizedRating = Math.round((entity.rating / this.TotalRating).toFixed(2) * 100);
 };
 
 // Generates a random string with length equal to
@@ -99,7 +108,7 @@ var g = new GeneticEvolver({
     seed: s,
     searchWord: 'Cat',
     generations: 2,
-    populationMembers: 10
+    populationMembers: 50
 });
 g.evolve();
 
